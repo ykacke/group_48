@@ -1,3 +1,4 @@
+from ctypes.wintypes import HRSRC
 from random import randint, choice
 
 
@@ -87,12 +88,37 @@ class Warrior(Hero):
 
 
 class Magic(Hero):
-    def __init__(self, name, health, damage):
+    def __init__(self, name, health, damage, boost_amount):
         super().__init__(name, health, damage, 'BOOST')
+        self.__boost_amount = boost_amount
+
+    @property
+    def boost_amount(self):
+        return self.__boost_amount
 
     def apply_super_power(self, boss, heroes):
-        pass
+        for hero in heroes:
+            if hero.health > 0:
+                hero.damage += self.damage
+            print(f'{self.name} прокачал {hero.name}: на {self.__boost_amount}. ')
         # TODO Here will be implementation of BOOSTING
+
+
+class Hacker(Hero):
+    def __init__(self, name, health, damage, steal_amount):
+        super().__init__(name, health, damage, 'STEAL_HEALTH')
+        self.__steal_amount = steal_amount
+        self.__round_counter = 0  # Инициализируем счётчик раундов
+
+    def apply_super_power(self, boss, heroes):
+        self.__round_counter += 1  # Увеличиваем счётчик раундов
+        if self.__round_counter % 2 == 0:  # Действие через раунд
+            if boss.health > self.__steal_amount:
+                boss.health -= self.__steal_amount  # Забираем здоровье у босса
+                hero = choice([h for h in heroes if h.health > 0 and h != self])
+                hero.health += self.__steal_amount  # Передаём здоровье случайному герою
+                print(f'{self.name} украл {self.__steal_amount} здоровья у босса и передал его {hero.name}')
+
 
 
 class Berserk(Hero):
@@ -120,8 +146,25 @@ class Medic(Hero):
 
     def apply_super_power(self, boss, heroes):
         for hero in heroes:
-            if hero.health > 0 and self != hero:
-                hero.health += self.__heal_points
+            if hero.health > 0 and hero != self:  # Исключаем самого мага
+                hero.damage += self.boost_amount  # Увеличиваем урон героя
+                print(f'{self.name} увеличил урон {hero.name} на {self.boost_amount}')
+
+
+class Witcher(Hero):
+    def __init__(self, name, health, damage):
+        super().__init__(name, health, damage, 'REVIVE')
+
+    def apply_super_power(self, boss, heroes):
+        for hero in heroes:
+            if hero.health <= 0:  # Проверяем только павших героев
+                print(f'Witcher {self.name} пожертвовал с собой ради {hero.name}')
+                hero.health += self.health  # Передаём здоровье павшему герою
+                self.health = 0  # Witcher умирает
+                break
+
+    def attack(self, boss):
+        pass
 
 
 round_number = 0
@@ -165,11 +208,12 @@ def start_game():
     boss = Boss(name='Dragon', health=1000, damage=50)
     warrior_1 = Warrior(name='Mario', health=270, damage=10)
     warrior_2 = Warrior(name='Ben', health=280, damage=15)
-    magic = Magic(name='Merlin', health=290, damage=10)
+    magic = Magic(name='Merlin', health=290, damage=10, boost_amount=5)
     berserk = Berserk(name='Guts', health=260, damage=5)
     doc = Medic(name='Aibolit', health=250, damage=5, heal_points=15)
     assistant = Medic(name='Kristin', health=300, damage=5, heal_points=5)
-    heroes_list = [warrior_1, doc, warrior_2, magic, berserk, assistant]
+    witcher = Witcher(name='Kariolla', health=280, damage=0)
+    heroes_list = [warrior_1, doc, warrior_2, witcher, magic, berserk, assistant]
 
     show_statistics(boss, heroes_list)
     while not is_game_over(boss, heroes_list):
