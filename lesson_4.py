@@ -99,26 +99,24 @@ class Magic(Hero):
     def apply_super_power(self, boss, heroes):
         for hero in heroes:
             if hero.health > 0:
-                hero.damage += self.damage
-            print(f'{self.name} прокачал {hero.name}: на {self.__boost_amount}. ')
-        # TODO Here will be implementation of BOOSTING
+                hero.damage += self.boost_amount
+                print(f'{self.name} усилил {hero.name}: на {self.__boost_amount}. ')
 
 
 class Hacker(Hero):
     def __init__(self, name, health, damage, steal_amount):
         super().__init__(name, health, damage, 'STEAL_HEALTH')
         self.__steal_amount = steal_amount
-        self.__round_counter = 0  # Инициализируем счётчик раундов
+        self.__round_counter = 0
 
     def apply_super_power(self, boss, heroes):
-        self.__round_counter += 1  # Увеличиваем счётчик раундов
-        if self.__round_counter % 2 == 0:  # Действие через раунд
+        self.__round_counter += 1
+        if self.__round_counter % 2 == 0:
             if boss.health > self.__steal_amount:
-                boss.health -= self.__steal_amount  # Забираем здоровье у босса
+                boss.health -= self.__steal_amount
                 hero = choice([h for h in heroes if h.health > 0 and h != self])
-                hero.health += self.__steal_amount  # Передаём здоровье случайному герою
+                hero.health += self.__steal_amount
                 print(f'{self.name} украл {self.__steal_amount} здоровья у босса и передал его {hero.name}')
-
 
 
 class Berserk(Hero):
@@ -144,11 +142,15 @@ class Medic(Hero):
         super().__init__(name, health, damage, 'HEAL')
         self.__heal_points = heal_points
 
+    @property
+    def heal_points(self):
+        return self.__heal_points
+
     def apply_super_power(self, boss, heroes):
         for hero in heroes:
-            if hero.health > 0 and hero != self:  # Исключаем самого мага
-                hero.damage += self.boost_amount  # Увеличиваем урон героя
-                print(f'{self.name} увеличил урон {hero.name} на {self.boost_amount}')
+            if hero.health > 0 and hero != self:
+                hero.damage += self.heal_points
+                print(f'{self.name} увеличил урон {hero.name} на {self.heal_points}')
 
 
 class Witcher(Hero):
@@ -157,10 +159,10 @@ class Witcher(Hero):
 
     def apply_super_power(self, boss, heroes):
         for hero in heroes:
-            if hero.health <= 0:  # Проверяем только павших героев
-                print(f'Witcher {self.name} пожертвовал с собой ради {hero.name}')
-                hero.health += self.health  # Передаём здоровье павшему герою
-                self.health = 0  # Witcher умирает
+            if hero.health <= 0:
+                print(f'Witcher {self.name} пожертвовал собой ради {hero.name}')
+                hero.health += self.health
+                self.health = 0
                 break
 
     def attack(self, boss):
@@ -213,8 +215,8 @@ def start_game():
     doc = Medic(name='Aibolit', health=250, damage=5, heal_points=15)
     assistant = Medic(name='Kristin', health=300, damage=5, heal_points=5)
     witcher = Witcher(name='Kariolla', health=280, damage=0)
-    hacker = Hacker(name='Brilant', health=275, damage=0)
-    heroes_list = [warrior_1, doc, warrior_2,hacker, witcher, magic, berserk, assistant]
+    hacker = Hacker(name='Brilant', health=275, damage=0, steal_amount=20)
+    heroes_list = [warrior_1, doc, warrior_2, hacker, witcher, magic, berserk, assistant]
 
     show_statistics(boss, heroes_list)
     while not is_game_over(boss, heroes_list):
