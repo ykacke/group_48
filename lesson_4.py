@@ -213,7 +213,8 @@ def start_game():
     doc = Medic(name='Aibolit', health=250, damage=5, heal_points=15)
     assistant = Medic(name='Kristin', health=300, damage=5, heal_points=5)
     witcher = Witcher(name='Kariolla', health=280, damage=0)
-    heroes_list = [warrior_1, doc, warrior_2, witcher, magic, berserk, assistant]
+    hacker = Hacker(name='Brilant', health=275, damage=0)
+    heroes_list = [warrior_1, doc, warrior_2,hacker, witcher, magic, berserk, assistant]
 
     show_statistics(boss, heroes_list)
     while not is_game_over(boss, heroes_list):
